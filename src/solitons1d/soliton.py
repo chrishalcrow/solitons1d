@@ -11,6 +11,7 @@ from .lagrangian_library import make_lagrangian_from_library
 
 from numba import njit, prange
 
+
 class Soliton:
     """
     A class describing a Soliton.
@@ -75,7 +76,7 @@ class Soliton:
         ax.set_title(f"Profile function. Energy = {self.energy:.4f}")
 
         return fig
-    
+
     def save(
         self,
         folder_name: str | Path,
@@ -85,19 +86,17 @@ class Soliton:
         """
 
         folder = Path(folder_name)
-        folder.mkdir(exist_ok = True)
+        folder.mkdir(exist_ok=True)
 
-        grid_folder =  "./grid"
+        grid_folder = "./grid"
         lagrangian_folder = "./lagrangian"
 
         metadata = {
-            'grid_folder': str(grid_folder),
-            'lagrangian_folder': str(lagrangian_folder),
+            "grid_folder": str(grid_folder),
+            "lagrangian_folder": str(lagrangian_folder),
         }
 
-        properties = {
-            'energy': self.energy
-        }
+        properties = {"energy": self.energy}
 
         self.grid.save(grid_folder)
         self.lagrangian.save(lagrangian_folder)
@@ -107,7 +106,7 @@ class Soliton:
 
         with open(folder / "properties.json", "w") as f:
             json.dump(properties, f)
-        
+
         # use `numpy`s save function to save the profile array
         np.save("profile", self.profile)
 
@@ -122,6 +121,7 @@ class Soliton:
         )
         self.compute_energy()
 
+
 def load_soliton(folder_name):
     """
     Loads the `Lagrangian` object at `folder_name`.
@@ -129,8 +129,10 @@ def load_soliton(folder_name):
     folder = Path(folder_name)
     metadata_path = folder / "metadata.json"
 
-    assert metadata_path.is_file(), f"Could not find Grid `metadata.json` file in {folder}."
-    
+    assert metadata_path.is_file(), (
+        f"Could not find Grid `metadata.json` file in {folder}."
+    )
+
     with open(metadata_path, "r") as f:
         soliton_metadata = json.load(f)
 
@@ -141,16 +143,17 @@ def load_soliton(folder_name):
     lagrangian = load_lagrangian(lagrangian_folder)
 
     profile = np.load("profile.npy")
-    
-    soliton = Soliton(grid = grid, lagrangian=lagrangian, initial_profile=profile)
+
+    soliton = Soliton(grid=grid, lagrangian=lagrangian, initial_profile=profile)
 
     return soliton
+
 
 @njit
 def compute_energy_fast(
     V: Callable[[float], float],
-    profile: np.array, 
-    num_grid_points: int, 
+    profile: np.array,
+    num_grid_points: int,
     grid_spacing: float,
 ) -> float:
     """
@@ -178,8 +181,6 @@ def compute_energy_fast(
     return tot_eng
 
 
-
-
 @njit
 def grad_flow_fast(dV, profile, num_grid_points, grid_spacing, dt, num_steps):
     for _ in range(num_steps):
@@ -188,10 +189,11 @@ def grad_flow_fast(dV, profile, num_grid_points, grid_spacing, dt, num_steps):
 
     return profile
 
+
 @njit(parallel=True)
 def get_first_derivative(
-    phi: np.ndarray, 
-    num_grid_points: int, 
+    phi: np.ndarray,
+    num_grid_points: int,
     grid_spacing: float,
 ) -> np.ndarray:
     """
@@ -213,17 +215,18 @@ def get_first_derivative(
 
     """
     d_phi = np.zeros(num_grid_points)
-    for i in prange(num_grid_points-4):
-        d_phi[i+2] = (phi[i] - 8 * phi[i + 1] + 8 * phi[i + 3] - phi[i + 4]) / (
+    for i in prange(num_grid_points - 4):
+        d_phi[i + 2] = (phi[i] - 8 * phi[i + 1] + 8 * phi[i + 3] - phi[i + 4]) / (
             12.0 * grid_spacing
         )
 
     return d_phi
 
+
 @njit
 def get_second_derivative(
-    phi: np.ndarray, 
-    num_grid_points: int, 
+    phi: np.ndarray,
+    num_grid_points: int,
     grid_spacing: float,
 ) -> np.ndarray:
     """
@@ -245,19 +248,20 @@ def get_second_derivative(
 
     """
     ddV = np.zeros(num_grid_points)
-    for i in prange(num_grid_points-4):
-        ddV[i+2] = (
-            -phi[i] + 16 * phi[i + 1] - 30 * phi[i+2] + 16 * phi[i + 3] - phi[i + 4]
+    for i in prange(num_grid_points - 4):
+        ddV[i + 2] = (
+            -phi[i] + 16 * phi[i + 1] - 30 * phi[i + 2] + 16 * phi[i + 3] - phi[i + 4]
         ) / (12.0 * np.pow(grid_spacing, 2))
 
     return ddV
+
 
 @njit
 def compute_dE(dV, profile, num_grid_points, grid_spacing):
     dd_phi = get_second_derivative(profile, num_grid_points, grid_spacing)
     dV_array = dV(profile)
 
-    return  dV_array - dd_phi 
+    return dV_array - dd_phi
 
 
 def create_profile(

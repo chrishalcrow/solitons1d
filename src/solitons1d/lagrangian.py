@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Callable
 import numpy as np
 
+
 class Lagrangian:
     """
     Used to represent Lagrangians of the form:
@@ -51,10 +52,11 @@ class Lagrangian:
 
         # make the folder a Path if it is a string
         folder = Path(folder_name)
-        folder.mkdir(exist_ok = True)
+        folder.mkdir(exist_ok=True)
 
         with open(folder / "metadata.pkl", "wb") as f:
             pkl.dump(metadata, f)
+
 
 def load_lagrangian(folder_name: str | Path):
     """
@@ -63,11 +65,18 @@ def load_lagrangian(folder_name: str | Path):
     folder = Path(folder_name)
     metadata_path = folder / "metadata.pkl"
 
-    assert metadata_path.is_file(), f"Could not find Lagrangian `metadata.json` file in {folder}."
+    assert metadata_path.is_file(), (
+        f"Could not find Lagrangian `metadata.json` file in {folder}."
+    )
+
+    b = a + 1
     
+
+
+
     with open(metadata_path, "rb") as f:
         lagrangian_metadata = pkl.load(f)
-    
+
     # the ** "unpacks" the dictionary into a series of arguments
     lagrangian = Lagrangian(**lagrangian_metadata)
     return lagrangian

@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import numpy as np
 
+
 class Grid:
     """
     A 1D grid.
@@ -44,16 +45,17 @@ class Grid:
         """
         metadata = {
             "num_grid_points": self.num_grid_points,
-            "grid_spacing": self.grid_spacing
+            "grid_spacing": self.grid_spacing,
         }
 
         # make the folder a Path if it is a string
         folder = Path(folder_name)
-        folder.mkdir(exist_ok = True)
+        folder.mkdir(exist_ok=True)
 
         # this overwrites any existing metadata.json file
         with open(folder / "metadata.json", "w") as f:
             json.dump(metadata, f)
+
 
 def load_grid(folder_name: str | Path):
     """
@@ -62,8 +64,10 @@ def load_grid(folder_name: str | Path):
     folder = Path(folder_name)
     metadata_path = folder / "metadata.json"
 
-    assert metadata_path.is_file(), f"Could not find Grid `metadata.json` file in {folder}."
-    
+    assert metadata_path.is_file(), (
+        f"Could not find Grid `metadata.json` file in {folder}."
+    )
+
     with open(metadata_path, "r") as f:
         grid_metadata = json.load(f)
 

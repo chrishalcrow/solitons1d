@@ -2,6 +2,7 @@ import numpy as np
 from solitons1d.soliton import get_first_derivative
 from solitons1d.grid import Grid
 
+
 def test_first_derivative():
     """
     Computes the first derivative of the function f(x) = 2x and checks
@@ -9,8 +10,10 @@ def test_first_derivative():
     """
 
     lattice_spacing = 0.1
-    linear_function = 2*np.arange(-1,1,lattice_spacing)
-    first_derivative = get_first_derivative(linear_function, len(linear_function), lattice_spacing)
+    linear_function = 2 * np.arange(-1, 1, lattice_spacing)
+    first_derivative = get_first_derivative(
+        linear_function, len(linear_function), lattice_spacing
+    )
 
     assert np.allclose(first_derivative[2:-2], 2.0)
 
