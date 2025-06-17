@@ -11,6 +11,8 @@ from .lagrangian_library import make_lagrangian_from_library
 
 from numba import njit, prange
 
+def print_hello():
+    print("hello")
 
 class Soliton:
     """
